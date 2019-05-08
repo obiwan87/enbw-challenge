@@ -64,3 +64,26 @@ def getSun(date):
 
 
 data["sun"] = data["timestampLocal"].apply(getSun)
+
+feiertage = pd.read_csv("https://www.spiketime.de/feiertagapi/feiertage/csv/2010/2018", delimiter=';')
+feierBW = feiertage[feiertage.Abkuerzung == "BW"]
+feierBW.to_csv("feiertage.csv")
+liste = feierBW["Datum"].unique()
+
+def isHoliday(date):
+    if pd.notnull(date):
+        datum = date.strftime("%Y-%m-%d")
+        if datum in feierBW["Datum"].unique():
+            return 1
+        else:
+            print(date)
+            return 0
+    else:
+        return 2
+    
+for i in liste:
+
+    data["holiday"]  = 1
+
+
+data["holiday"] = data["timestampLocal"].apply(isHoliday)
