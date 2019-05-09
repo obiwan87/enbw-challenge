@@ -8,15 +8,17 @@ import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
 
+
 def str2float(x):
     return float(x.replace(',', '.'))
 
 
-df = pd.read_csv("data/hackathon_EnBW_smart_meter_data_30_hh.csv", sep=';', na_values = ['NA'], converters = {'value': str2float})
+df = pd.read_csv("data/hackathon_EnBW_smart_meter_data_30_hh.csv", sep=';', na_values=['NA'],
+                 converters={'value': str2float})
 df['timestampLocal'] = pd.to_datetime(df.timestampLocal)
 
-#print(df.isnull().sum())
-#print(df[df.timestampLocal.isnull()])
+# print(df.isnull().sum())
+# print(df[df.timestampLocal.isnull()])
 
 
 grouped = df.groupby("id")
@@ -25,23 +27,23 @@ data_list = []
 
 for n, g in grouped:
     id = g['id'].iloc[0]
-    #print(id)
+    # print(id)
     g = g.set_index('timestampLocal')
-    g = g.resample("h").sum()
+    g = g.resample("4h").sum()
 
-    g['rolling_4'] = g['value'].rolling(window = 4).mean()
-    g['std_12'] = g['value'].rolling(window = 20, center = True).std()
-    #print(g)
+    g['rolling_4'] = g['value'].rolling(window=4).mean()
+    g['std_12'] = g['value'].rolling(window=20, center=True).std()
+    # print(g)
 
-    g['index'] = range(1,len(g)+1)
+    g['index'] = range(1, len(g) + 1)
     print(g)
     g.set_index('index')
 
     graph_data = go.Scatter(
         x=g['index'].values,
-        #x = g['timestampLocal'],
+        # x = g['timestampLocal'],
         y=g['value'].values,
-        name= 'Haushalt' + str(id),
+        name='Haushalt' + str(id),
         line=dict(
             color=('blue'),
             width=2)
@@ -77,8 +79,7 @@ for n, g in grouped:
 
     data = [graph_data_rolling, graph_data_std]
 
-    if id == 6:
-
+    if id == 9:
         fig = dict(data=data, layout=layout)
         plotly.offline.plot(fig, auto_open=True, include_plotlyjs=True)
         break;

@@ -2,88 +2,62 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-print('hello world')
 
+from datetime import datetime
 
-
-
-
-
-data = pd.read_csv("hackathon_EnBW_smart_meter_data_30_hh.csv", delimiter=';')
-
-g1 = sns.pointplot(x="timestampLocal", y="value", hue = "id", data = data)
-
-data = pd.read_csv("hackathon_EnBW_smart_meter_data_30_hh.csv", delimiter=';')
+data = pd.read_csv("data/data-sonne.csv", delimiter=',')
 data['timestampLocal'] = pd.to_datetime(data.timestampLocal)
-data.set_index(data.timestampLocal,inplace = True)
+
 data.dropna()
-feiertage = pd.read_csv("https://www.spiketime.de/feiertagapi/feiertage/csv/2014/2018", delimiter=';')
+feiertage = pd.read_csv("additional_data/feiertage.csv")
 
-sonne = pd.read_csv("sonnenaufgang.csv",delimiter=";")
+# sonne = pd.read_csv("additional_data/sonnenstunden.csv")
+# sonne.set_index(sonne.date, inplace=True)
+#
+# def getSun(date):
+#     if pd.notnull(date):
+#         datum = date.strftime("%m-%d")
+#         datum2 = date.strftime("%Y-%m-%d")
+#         daten = sonne.loc[datum, :]
+#
+#         start = daten.loc["start"]
+#         end = daten.loc["end"]
+#
+#         start = datetime.strptime(datum2 + " " + start, '%Y-%m-%d %I:%M:%S %p')
+#         end = datetime.strptime(datum2 + " " + end, '%Y-%m-%d %I:%M:%S %p')
+#         if start < date < end:
+#             #print(date)
+#             return 1
+#         else:
+#             #print(date)
+#             return 0
+#     else:
+#         #print('fehler')
+#         return -1
+#
+#
+# data["sun"] = data["timestampLocal"].apply(getSun)
+# data.to_csv('data/data-sonne.csv')
 
-date = "01-11"
+unique_dates = feiertage["Datum"].unique()
 
-
-def getStart(date):
-    sun = pd.read_json("https://api.sunrise-sunset.org/json?lat=48.776778&lng=-9.175148&&date=2012-"+date)
-    sunrise = sun["results"].loc["civil_twilight_begin"]
-    print(sunrise)
-    return sunrise
-
-def getEnd(date):
-    sun = pd.read_json("https://api.sunrise-sunset.org/json?lat=48.776778&lng=-9.175148&&date=2012-"+date)
-    sunset = sun["results"].loc["civil_twilight_end"]
-    print(sunset)
-    return sunset
-
-
-sonne["start"]=sonne["date"].apply(getStart)
-sonne["end"] = sonne["date"].apply(getEnd)
-
-def getSun(date):
-    if pd.notnull(date):
-        datum = date.strftime("%m-%d")
-        datum2 = date.strftime("%Y-%m-%d")
-        daten = sonne[sonne.date == datum].iloc[0]
-
-        start = daten.loc["start"]
-        end = daten.loc["end"]
-
-        start = datetime.strptime(datum2+" "+start, '%Y-%m-%d %I:%M:%S %p')
-        end = datetime.strptime(datum2+" "+end, '%Y-%m-%d %I:%M:%S %p')
-        if date > start and date < end:
-            print(date)
-            return 1
-        else:
-            print(date)
-            return 0
-    else:
-        print(fehler)
-        return 2
-
-
-
-data["sun"] = data["timestampLocal"].apply(getSun)
-
-feiertage = pd.read_csv("https://www.spiketime.de/feiertagapi/feiertage/csv/2010/2018", delimiter=';')
-feierBW = feiertage[feiertage.Abkuerzung == "BW"]
-feierBW.to_csv("feiertage.csv")
-liste = feierBW["Datum"].unique()
 
 def isHoliday(date):
     if pd.notnull(date):
         datum = date.strftime("%Y-%m-%d")
-        if datum in feierBW["Datum"].unique():
+
+        is_weekend = date.isoweekday() >= 6
+        is_holiday = datum in unique_dates
+
+        if is_holiday:
             return 1
+        elif is_weekend:
+            return 2
         else:
-            print(date)
             return 0
     else:
-        return 2
-    
-for i in liste:
-
-    data["holiday"]  = 1
+        return -1
 
 
 data["holiday"] = data["timestampLocal"].apply(isHoliday)
+data.to_csv('data/data-sonne-feiertage.csv')

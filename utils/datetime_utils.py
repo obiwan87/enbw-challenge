@@ -7,7 +7,3 @@ import pandas as pd
 def day_of_year_to_date(day, year):
     current_date = datetime.datetime(year, 1, 1) + datetime.timedelta(int(day))
     return current_date
-
-
-def is_holiday(date):
-    date.strf

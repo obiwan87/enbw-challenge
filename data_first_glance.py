@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-from pandas.tseries import converter
 from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 from matplotlib import pyplot as plt
-import seaborn as sns
 
 
 def str2float(x):
@@ -28,39 +27,27 @@ indices = g.indices.keys()
 N = len(indices)
 n = np.ceil(np.sqrt(N))
 
+levels = ['D', 'W', 'M', '4H']
+for level in levels:
+    plt.figure()
+    for i in indices:
+        try:
+            group = g.get_group(i)
+            group = group.set_index('timestampLocal')
 
-# data = data.dropna() \
-#     .groupby(group_by_hour_of_day) \
-#     .transform(transform)
+            grouped_b
 
-data.set_index(data.timestampLocal, inplace=True)
-data.dropna(inplace=True)
-series = pd.Series(data.value.values, data.index)
-t = series.groupby(lambda x: x.hour)\
-    .transform(lambda x: (x - x.mean())/x.std())\
-    .groupby(lambda x: x.hour)
+            resampled = group.resample(level)
 
-group = g.get_group(1)
+            mean_per_day = resampled.value.mean().to_frame()
+            mean_per_day = mean_per_day.reset_index()
 
-# levels = ['D', 'W', 'M']
-# for level in levels:
-#     plt.figure()
-#     for i in indices:
-#         try:
-#             group = g.get_group(i)
-#             group = group.set_index('timestampLocal')
-#
-#             grouped_by_day = group.resample(level)
-#
-#             mean_per_day = grouped_by_day.value.mean().to_frame()
-#             mean_per_day = mean_per_day.reset_index()
-#
-#             register_matplotlib_converters()
-#             plt.subplot(n, n, i)
-#             plt.title(str(i))
-#             mean_per_day['value'].plot()
-#         except KeyError:
-#             continue
-#     plt.suptitle(level)
-#
-#
+            plt.subplot(n, n, i)
+            plt.title(str(i))
+            mean_per_day['value'].plot()
+        except KeyError:
+            print('error')
+            continue
+    plt.suptitle(level)
+
+
