@@ -11,19 +11,10 @@ def str2float(x):
     return float(x.replace(',', '.'))
 
 
-def visualize_household(id, start_date, end_date, anomaly_list):
-
-    df = pd.read_csv("data/data-sun-holidays.csv", sep=';', na_values=['NA'], converters={'value': str2float})
-    df['timestampLocal'] = pd.to_datetime(df.timestampLocal)
-
+def visualize_household(g, start_date, end_date, anomaly_list):
+    plt.figure()
     # print(df.isnull().sum())
     # print(df[df.timestampLocal.isnull()])
-
-    grouped = df.groupby('id')
-
-    data_list = []
-
-    g = grouped.get_group(id)
     g.set_index('timestampLocal')
 
     g.dropna(inplace=True)
@@ -39,7 +30,7 @@ def visualize_household(id, start_date, end_date, anomaly_list):
     print(g)
 
     y = g['value'].values
-    y_holiday = g['holiday'].values
+    #y_holiday = g['holiday'].values
 
     x = g['timestampLocal'].values
 
@@ -55,15 +46,6 @@ def visualize_household(id, start_date, end_date, anomaly_list):
 
 
     plt.show()
-
-
-
-
-anomaly_list = [['2014-01-10 00:00:00', '2014-01-21 00:00:00'],
-                ['2014-02-10 00:00:00', '2014-02-21 00:00:00']]
-
-visualize_household(3, '2014-01-01 00:00:00', '2014-12-31 00:00:00', anomaly_list)
-
 
 
 
